@@ -1,0 +1,9 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+    <gradient
+        android:startColor="#c7b681"
+        android:centerColor="#bc8d43"
+        android:endColor="#da800c"
+        android:type="linear"
+        android:angle="135"/>
+</shape><!-- From: file:/home/menaka/Documents/Android_Projects/wso2_sense_agent/app/src/main/res/drawable/side_nav_bar.xml -->
