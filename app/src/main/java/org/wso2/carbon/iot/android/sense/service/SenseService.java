@@ -21,6 +21,7 @@ import android.os.IBinder;
 import org.wso2.carbon.iot.android.sense.events.input.SenseDataCollector;
 import org.wso2.carbon.iot.android.sense.events.input.battery.BatteryDataReceiver;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
+import org.wso2.carbon.iot.android.sense.util.SenseWakeLock;
 //import org.wso2.carbon.iot.android.sense.util.SenseWakeLock;
 
 
@@ -32,7 +33,7 @@ public class SenseService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-//        SenseWakeLock.acquireWakeLock(this);
+        SenseWakeLock.acquireWakeLock(this);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class SenseService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         context = this;
-//        if (!LocalRegister.isExist(context)) return Service.START_NOT_STICKY;
+        if (!LocalRegister.isExist(context)) return Service.START_NOT_STICKY;
 
         SenseDataCollector Sensor = new SenseDataCollector(this, SenseDataCollector.DataType.SENSOR);
         SenseDataCollector Location = new SenseDataCollector(this, SenseDataCollector.DataType.LOCATION);
@@ -60,7 +61,7 @@ public class SenseService extends Service {
 
     @Override
     public void onDestroy() {
-//        SenseWakeLock.releaseCPUWakeLock();
+        SenseWakeLock.releaseCPUWakeLock();
         super.onDestroy();
     }
 }

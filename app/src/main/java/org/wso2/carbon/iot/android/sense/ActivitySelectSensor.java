@@ -1,9 +1,13 @@
 package org.wso2.carbon.iot.android.sense;
 
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,16 +27,22 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensor;
+import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensorReader;
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorDataReader;
 import org.wso2.carbon.iot.android.sense.register.SenseDeEnroll;
+import org.wso2.carbon.iot.android.sense.scheduler.RealTimeSensorChangeReceiver;
 import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
 import org.wso2.carbon.iot.android.sense.service.UIUpdateService;
 import org.wso2.carbon.iot.android.sense.util.DataMap;
 import org.wso2.carbon.iot.android.sense.util.SensorViewAdaptor;
 import org.wso2.carbon.iot.android.sense.util.TempStore;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +65,12 @@ public class ActivitySelectSensor extends AppCompatActivity
     FloatingActionButton add;
     ListView listView;
     TextView textView;
+    SensorManager manager;
+    ArrayList<Sensor> sensors = new ArrayList<>();
     boolean check;
+
+    RealTimeSensorReader sensorReader = null;
+    RealTimeSensorChangeReceiver realTimeSensorChangeReceiver = new RealTimeSensorChangeReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +78,8 @@ public class ActivitySelectSensor extends AppCompatActivity
         setContentView(R.layout.activity_activity_select_sensor);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
 
 //        textView = (TextView) findViewById(R.id.data2);
         listView = (ListView) findViewById(R.id.senseListContainer);
@@ -187,33 +204,28 @@ public class ActivitySelectSensor extends AppCompatActivity
 //        ArrayAdapter adaptor = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
 //        listView.setAdapter(adaptor);
 
-//        SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
-//        senseScheduleReceiver.clearAbortBroadcast();
-//        senseScheduleReceiver.onReceive(this, null);
+        SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
+        senseScheduleReceiver.clearAbortBroadcast();
+        senseScheduleReceiver.onReceive(this, null);
+        /**
+         * Get the selected sensors
+         * Register them
+         * */
 
-        SensorDataReader reader = new SensorDataReader(this);
-        new Thread(reader).start();
 
+        SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.realTimeSensors);
 
-        final SensorViewAdaptor adaptor1 = new SensorViewAdaptor(this, TempStore.list);
+        sensorReader = new RealTimeSensorReader(this, adaptor1);
+        getSensors();
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        for(Sensor s : sensors){
+            manager.registerListener(sensorReader, s, SensorManager.SENSOR_DELAY_NORMAL);
+        }
 
-                adaptor1.notifyDataSetChanged();
-            }
-        });
-
-//        UIUpdateService su = new UIUpdateService(adaptor1, this);
+        System.out.println(manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) + " " + manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+        registerReceiver(realTimeSensorChangeReceiver, new IntentFilter("sensor"));
+        realTimeSensorChangeReceiver.updateOnChange(adaptor1);
         listView.setAdapter(adaptor1);
-
-
-
-
-//        new Thread().start();
-
-
 
     }
 
@@ -237,5 +249,34 @@ public class ActivitySelectSensor extends AppCompatActivity
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        for(Sensor s : sensors){
+            manager.unregisterListener(sensorReader, s);
+        }
+        /**
+         * unregister the sensors
+         * */
+        unregisterReceiver(realTimeSensorChangeReceiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+    }
+
+    public void getSensors(){
+        for(String sensor : senseorList.toArray(new String[senseorList.size()])){
+            sensors.add(manager.getDefaultSensor(AvailableSensors.getType(sensor.toLowerCase())));
+        }
     }
 }

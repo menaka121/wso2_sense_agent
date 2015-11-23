@@ -45,7 +45,7 @@ public class AvailableSensors {
             case "gravity":
                 type = Sensor.TYPE_GRAVITY;
                 break;
-            case "rotationVector":
+            case "rotation vector":
                 type = Sensor.TYPE_ROTATION_VECTOR;
                 break;
             case "pressure":
@@ -61,6 +61,7 @@ public class AvailableSensors {
                 type = Sensor.TYPE_PROXIMITY;
 
         }
+        System.out.println("[Urgent] " + type);
         return type;
     }
 
@@ -78,7 +79,7 @@ public class AvailableSensors {
                 s = "gravity";
                 break;
             case Sensor.TYPE_ROTATION_VECTOR:
-                s = "rotationVector";
+                s = "rotation vector";
                 break;
             case Sensor.TYPE_PRESSURE:
                 s = "pressure";

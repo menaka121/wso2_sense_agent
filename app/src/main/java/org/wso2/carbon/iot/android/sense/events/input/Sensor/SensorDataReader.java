@@ -8,12 +8,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import org.json.JSONObject;
 import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.events.input.DataReader;
 import org.wso2.carbon.iot.android.sense.util.DataMap;
-import org.wso2.carbon.iot.android.sense.util.TempStore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +28,7 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
     private Map<String, SensorData> senseDataStruct = new HashMap<String, SensorData>();
     private Vector<SensorData> sensorVector = new Vector<SensorData>();
     Context ctx;
-    private List<Sensor> list = new ArrayList<>();
+    private List<Sensor> sensorList1 = new ArrayList<>();
     private Set<String> selectedset;
 
     private List<Sensor> sensorList = new ArrayList<>();
@@ -47,9 +45,9 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
 
         selectedSensorList(selectedset);
 
-        System.out.println(list.size());
+        System.out.println(sensorList1.size());
 
-        for(Sensor s : list){
+        for(Sensor s : sensorList1){
             Log.d("Sensor", s.getName());
             mSensorManager.registerListener(this, s, SensorManager.SENSOR_DELAY_NORMAL);
         }
@@ -60,7 +58,7 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
     private void collectSensorData(){
 
         Log.d(this.getClass().getName(), "Sensor Type");
-        for (Sensor sensor : list)
+        for (Sensor sensor : sensorList1)
         {
             try{
                 if (senseDataStruct.containsKey(sensor.getName())){
@@ -76,8 +74,6 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
 
         }
         mSensorManager.unregisterListener(this);
-
-
     }
 
     public Vector<SensorData> getSensorData(){
@@ -88,9 +84,6 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
         }
         collectSensorData();
         return sensorVector;
-
-
-
 
     }
 
@@ -122,7 +115,7 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
         String[] fromsensorset = set.toArray(new String[set.size()]);
 
         for(String s : fromsensorset){
-            list.add(mSensorManager.getDefaultSensor(AvailableSensors.getType(s.toLowerCase())));
+            sensorList1.add(mSensorManager.getDefaultSensor(AvailableSensors.getType(s.toLowerCase())));
         }
 
     }

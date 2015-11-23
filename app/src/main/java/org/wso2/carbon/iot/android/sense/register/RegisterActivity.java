@@ -30,7 +30,11 @@ import android.widget.EditText;
 
 import org.wso2.carbon.iot.android.sense.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
+import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
+import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
+import org.wso2.carbon.iot.android.sense.util.SenseClient;
+import org.wso2.carbon.iot.android.sense.util.SenseUtils;
 import org.wso2.carbon.iot.android.sense.util.SupportedSensors;
 
 
@@ -72,51 +76,121 @@ public class RegisterActivity extends Activity {
         deviceRegisterButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-//                attemptLogin();
+                attemptLogin();
 
                 Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
                 startActivity(intent);
 
             }
         });
-//
-//        mLoginFormView = findViewById(R.id.login_form);
-//        mProgressView = findViewById(R.id.login_progress);
+
+        mLoginFormView = findViewById(R.id.login_form);
+        mProgressView = findViewById(R.id.login_progress);
     }
 
-//
-//    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-//    public void showProgress(final boolean show) {
-//        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-//        // for very easy animations. If available, use these APIs to fade-in
-//        // the progress spinner.
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-//            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-//
-//            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-//                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-//                @Override
-//                public void onAnimationEnd(Animator animation) {
-//                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//                }
-//            });
-//
-//            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-//            mProgressView.animate().setDuration(shortAnimTime).alpha(
-//                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-//                @Override
-//                public void onAnimationEnd(Animator animation) {
-//                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-//                }
-//            });
-//        } else {
-//            // The ViewPropertyAnimator APIs are not available, so simply show
-//            // and hide the relevant UI components.
-//            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-//            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//        }
-//    }
+    public void attemptLogin() {
+        Context context = this;
+        showProgress(true);
+        // Reset errors.
+        mUsernameView.setError(null);
+        mPasswordView.setError(null);
+
+        // Store values at the time of the login attempt.
+        String username = mUsernameView.getText().toString();
+        String password = mPasswordView.getText().toString();
+        String hostname = mHostView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password)) {
+            // mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            //cancel = true;
+        }
+
+        // Check for a valid username .
+        if (TextUtils.isEmpty(username)) {
+            mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = mUsernameView;
+            cancel = true;
+        }
+
+        if (TextUtils.isEmpty(username)) {
+            mHostView.setError(getString(R.string.error_field_required));
+            focusView = mHostView;
+            cancel = true;
+        }
+
+        if (cancel) {
+
+            focusView.requestFocus();
+        } else {
+
+
+            SenseClient client = new SenseClient(getApplicationContext());
+            LocalRegister.addServerURL(getBaseContext(), hostname);
+            boolean auth = client.isAuthenticate(username, password);
+
+            if(auth) {
+                //TODO API SECURITY need to be added.
+                String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
+                boolean registerStatus=client.register(username, deviceId);
+                if(registerStatus){
+                    LocalRegister.addUsername(getApplicationContext(), username);
+                    LocalRegister.addDeviceId(getApplicationContext(), deviceId);
+
+                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
+                    senseScheduleReceiver.clearAbortBroadcast();
+                    senseScheduleReceiver.onReceive(this, null);
+
+                    DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
+                    dataUploaderReceiver.clearAbortBroadcast();
+                    dataUploaderReceiver.onReceive(this, null);
+
+                    Intent activity = new Intent(getApplicationContext(), SenseDeEnroll.class);
+                    startActivity(activity);
+
+                }
+            }
+            showProgress(false);
+        }
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
 
 
 }
