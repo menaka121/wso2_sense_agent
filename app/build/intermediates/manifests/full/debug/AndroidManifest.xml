@@ -51,15 +51,10 @@
             android:label="@string/app_name" >
         </service>
         <service
-            android:name="org.wso2.carbon.iot.android.sense.service.UIUpdateService"
+            android:name="org.wso2.carbon.iot.android.sense.scheduler.DataUploaderService"
             android:enabled="true"
             android:label="@string/app_name" >
         </service>
-        <!-- <service -->
-        <!-- android:name="org.wso2.carbon.iot.android.sense.scheduler.DataUploaderService" -->
-        <!-- android:enabled="true" -->
-        <!-- android:label="@string/app_name" > -->
-        <!-- </service> -->
 
         <receiver android:name="org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver" >
             <intent-filter>

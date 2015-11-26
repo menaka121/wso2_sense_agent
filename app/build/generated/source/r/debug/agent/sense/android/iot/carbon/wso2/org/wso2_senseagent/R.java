@@ -2481,11 +2481,12 @@ containing a value of this type.
         public static final int mr_ic_play_light=0x7f02007d;
         public static final int mr_ic_settings_dark=0x7f02007e;
         public static final int mr_ic_settings_light=0x7f02007f;
-        public static final int notification_template_icon_bg=0x7f020084;
+        public static final int notification_template_icon_bg=0x7f020085;
         public static final int powered_by_google_dark=0x7f020080;
         public static final int powered_by_google_light=0x7f020081;
-        public static final int side_nav_bar=0x7f020082;
-        public static final int snackbar_background=0x7f020083;
+        public static final int pushtoserver=0x7f020082;
+        public static final int side_nav_bar=0x7f020083;
+        public static final int snackbar_background=0x7f020084;
     }
     public static final class id {
         public static final int X=0x7f0d0093;

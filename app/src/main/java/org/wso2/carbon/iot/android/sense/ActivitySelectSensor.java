@@ -1,50 +1,51 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ *
+ */
 package org.wso2.carbon.iot.android.sense;
 
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.view.View;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensor;
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensorReader;
-import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorDataReader;
 import org.wso2.carbon.iot.android.sense.register.SenseDeEnroll;
+import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
 import org.wso2.carbon.iot.android.sense.scheduler.RealTimeSensorChangeReceiver;
 import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
-import org.wso2.carbon.iot.android.sense.service.UIUpdateService;
-import org.wso2.carbon.iot.android.sense.util.DataMap;
 import org.wso2.carbon.iot.android.sense.util.SensorViewAdaptor;
 import org.wso2.carbon.iot.android.sense.util.TempStore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
@@ -52,11 +53,10 @@ import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
 /**
  * Activity for selecting sensors available in the device
- *
- * */
+ */
 
 public class ActivitySelectSensor extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, SelectSensorDialog.SensorListListener{
+        implements NavigationView.OnNavigationItemSelectedListener, SelectSensorDialog.SensorListListener {
 
     SharedPreferences sp;
     SelectSensorDialog dialog = new SelectSensorDialog();
@@ -64,7 +64,6 @@ public class ActivitySelectSensor extends AppCompatActivity
     FloatingActionButton fab;
     FloatingActionButton add;
     ListView listView;
-    TextView textView;
     SensorManager manager;
     ArrayList<Sensor> sensors = new ArrayList<>();
     boolean check;
@@ -80,18 +79,24 @@ public class ActivitySelectSensor extends AppCompatActivity
         setSupportActionBar(toolbar);
         manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-
-//        textView = (TextView) findViewById(R.id.data2);
         listView = (ListView) findViewById(R.id.senseListContainer);
+
+        registerReceiver(realTimeSensorChangeReceiver, new IntentFilter("sensor"));
+
         //Publish data
         fab = (FloatingActionButton) findViewById(R.id.publish);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Publishing data started", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 check = true;
+                DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
+                dataUploaderReceiver.clearAbortBroadcast();
+                dataUploaderReceiver.onReceive(getApplicationContext(), null);
                 //Call the stop publish button
+
 
             }
         });
@@ -105,23 +110,6 @@ public class ActivitySelectSensor extends AppCompatActivity
         });
 
         sp = getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0);
-
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.parentContainer);
-
-//        if(senseorList.size()<1){
-//            Button bt = new Button(this);
-//            bt.setText("Select your Sensors");
-//            bt.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
-//            layout.addView(bt);
-//
-//            bt.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    dialog.show(getFragmentManager(), "Sensor List");
-//                }
-//            });
-//        }
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -159,6 +147,15 @@ public class ActivitySelectSensor extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+
+            for (Sensor s : sensors) {
+                manager.unregisterListener(sensorReader, s);
+            }
+            /**
+             * unregister the sensors
+             * */
+            unregisterReceiver(realTimeSensorChangeReceiver);
+
             Intent intent = new Intent(this, SenseDeEnroll.class);
             startActivity(intent);
 
@@ -175,17 +172,8 @@ public class ActivitySelectSensor extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.select) {
-            // Handle the camera action
-//            SharedPreferences preferences = getSharedPreferences("Sensors", 0);
-//            Set<String> set= preferences.getStringSet("sensors", null);
-//            Toast.makeText(getApplicationContext(), set!=null?set.toString():"nothing", Toast.LENGTH_SHORT).show();
             dialog.show(getFragmentManager(), "Sensor List");
-
-
-
         }
-
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -194,48 +182,39 @@ public class ActivitySelectSensor extends AppCompatActivity
 
     @Override
     public void onDialogPositiveClick(SelectSensorDialog dialog) {
+
         System.out.println(dialog.getSet().toString());
         senseorList = dialog.getSet();
         update();
 
 
-        List<String> list = Arrays.asList(senseorList.toArray(new String[senseorList.size()]));
-
-//        ArrayAdapter adaptor = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
-//        listView.setAdapter(adaptor);
+        TempStore.realTimeSensors.clear();
 
         SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
         senseScheduleReceiver.clearAbortBroadcast();
         senseScheduleReceiver.onReceive(this, null);
+
         /**
          * Get the selected sensors
          * Register them
          * */
-
-
         SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.realTimeSensors);
 
         sensorReader = new RealTimeSensorReader(this, adaptor1);
         getSensors();
 
-        for(Sensor s : sensors){
+        for (Sensor s : sensors) {
             manager.registerListener(sensorReader, s, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
-        System.out.println(manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) + " " + manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-        registerReceiver(realTimeSensorChangeReceiver, new IntentFilter("sensor"));
+
         realTimeSensorChangeReceiver.updateOnChange(adaptor1);
         listView.setAdapter(adaptor1);
 
     }
 
-    @Override
-    public void onDialogNegativeClick(SelectSensorDialog dialog) {
-
-    }
-
-    public boolean update(){
-        try{
+    public boolean update() {
+        try {
             Log.d("Update", "Set the values to SP");
             Log.d("List", senseorList.toString());
 
@@ -244,7 +223,7 @@ public class ActivitySelectSensor extends AppCompatActivity
             editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, senseorList);
             editor.apply();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -254,13 +233,7 @@ public class ActivitySelectSensor extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        for(Sensor s : sensors){
-            manager.unregisterListener(sensorReader, s);
-        }
-        /**
-         * unregister the sensors
-         * */
-        unregisterReceiver(realTimeSensorChangeReceiver);
+
     }
 
     @Override
@@ -274,8 +247,8 @@ public class ActivitySelectSensor extends AppCompatActivity
 
     }
 
-    public void getSensors(){
-        for(String sensor : senseorList.toArray(new String[senseorList.size()])){
+    public void getSensors() {
+        for (String sensor : senseorList.toArray(new String[senseorList.size()])) {
             sensors.add(manager.getDefaultSensor(AvailableSensors.getType(sensor.toLowerCase())));
         }
     }

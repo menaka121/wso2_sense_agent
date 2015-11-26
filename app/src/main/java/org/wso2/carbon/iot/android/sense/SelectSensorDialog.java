@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ *
+ */
 package org.wso2.carbon.iot.android.sense;
 
 import android.app.Activity;
@@ -12,29 +25,28 @@ import android.util.Log;
 
 import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-//import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
-import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 
 /**
  * Functionality
- *
+ * <p/>
  * Show the list of available sensors in a list
  * Get the user selections
  * Put them in to shared preferences
- *
- * */
+ */
 
 
 public class SelectSensorDialog extends DialogFragment {
 
 
     protected boolean[] selections = new boolean[AvailableSensors.SUPPORTED_SENSOR_COUNT];
-    private Set<String> senseorList = new HashSet<>();
     Activity activity;
+    SensorListListener sensorListListener;
+    private Set<String> senseorList = new HashSet<>();
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -44,7 +56,7 @@ public class SelectSensorDialog extends DialogFragment {
 
         SharedPreferences preferences = getActivity().getSharedPreferences(SenseConstants.AVAILABLE_SENSORS, Context.MODE_MULTI_PROCESS);
 
-        Set<String> set= preferences.getStringSet(SenseConstants.GET_AVAILABLE_SENSORS, null);
+        Set<String> set = preferences.getStringSet(SenseConstants.GET_AVAILABLE_SENSORS, null);
         final CharSequence[] sequence = getSequence(set);
 
         final boolean[] pos = new boolean[selections.length];
@@ -69,19 +81,8 @@ public class SelectSensorDialog extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.d("Click", "Ok");
-//                update();
                 //call sensor reading class
-
-//                SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
-//                senseScheduleReceiver.clearAbortBroadcast();
-//                senseScheduleReceiver.onReceive(activity, null);
-
-
-//                DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
-//                dataUploaderReceiver.clearAbortBroadcast();
-//                dataUploaderReceiver.onReceive(activity, null);
-
-                                sensorListListener.onDialogPositiveClick(SelectSensorDialog.this);
+                sensorListListener.onDialogPositiveClick(SelectSensorDialog.this);
 
             }
         });
@@ -89,7 +90,6 @@ public class SelectSensorDialog extends DialogFragment {
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-//                sensorListListener.onDialogPositiveClick(SelectSensorDialog.this);
                 Log.d("Click", "Cancel");
                 for (int i = 0; i < AvailableSensors.SUPPORTED_SENSOR_COUNT; i++) {
 
@@ -103,7 +103,6 @@ public class SelectSensorDialog extends DialogFragment {
 
         return builder.create();
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -133,48 +132,22 @@ public class SelectSensorDialog extends DialogFragment {
 
     /**
      * Interface to be implemented by the parent
-     * */
-    public CharSequence[] getSequence(Set<String> sensorset){
-        CharSequence[] seq = new CharSequence[sensorset.size()];
+     */
+    public CharSequence[] getSequence(Set<String> sensorset) {
+        CharSequence[] seq;
         String[] seq2 = sensorset.toArray(new String[sensorset.size()]);
 
 
-        for(int i = 0; i<seq.length; i++){
-            seq[i] = seq2[i];
-        }
+        seq = Arrays.copyOf(seq2, seq2.length);
         return seq;
     }
 
-
-    //Set the selected values to Shared Preferences to be handled in Sensor reading.
-//    public boolean update(){
-//        try{
-//            Log.d("Update", "Set the values to SP");
-//            Log.d("List", senseorList.toString());
-//
-//            SharedPreferences sp = getActivity().getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0);
-//            SharedPreferences.Editor editor = sp.edit();
-//            editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, senseorList);
-//            editor.apply();
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return false;
-//        }
-//        return true;
-//    }
-
-
-    SensorListListener sensorListListener;
-
-    public interface SensorListListener {
-        public void onDialogPositiveClick(SelectSensorDialog dialog);
-
-        public void onDialogNegativeClick(SelectSensorDialog dialog);
+    public Set<String> getSet() {
+        return this.senseorList;
     }
 
-    public Set<String> getSet(){
-        return this.senseorList;
+    public interface SensorListListener {
+        void onDialogPositiveClick(SelectSensorDialog dialog);
     }
 
 }

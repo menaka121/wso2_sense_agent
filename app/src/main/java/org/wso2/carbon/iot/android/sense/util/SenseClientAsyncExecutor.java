@@ -174,10 +174,12 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                             builder.append("\n"); // append a new line
                         }
                     } catch (IOException e) {
+
                     } finally {
                         try {
                             inStream.close();
                         } catch (IOException e) {
+
                         }
                     }
                     // System.out.println(builder.toString());

@@ -1,8 +1,17 @@
-package org.wso2.carbon.iot.android.sense.constants;
-
-/**
- * Created by menaka on 11/18/15.
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ *
  */
+package org.wso2.carbon.iot.android.sense.constants;
 
 import android.hardware.Sensor;
 
@@ -14,8 +23,8 @@ import java.util.List;
  */
 public class AvailableSensors {
 
+    public static final int SUPPORTED_SENSOR_COUNT = 10;
     private static List<String> sensorList = new ArrayList<>();
-    public static int SUPPORTED_SENSOR_COUNT = 10;
 
     //List of supported sensors by the system
     public static List<String> getList() {
@@ -29,7 +38,6 @@ public class AvailableSensors {
         sensorList.add("Proximity");
         return sensorList;
     }
-
 
 
     //Get the int type of the sensor
@@ -66,7 +74,7 @@ public class AvailableSensors {
     }
 
     //Get the string type of te sensor
-    public static String getType(int type){
+    public static String getType(int type) {
         String s = "";
         switch (type) {
             case Sensor.TYPE_ACCELEROMETER:

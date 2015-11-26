@@ -1,23 +1,34 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ *
+ */
 package org.wso2.carbon.iot.android.sense.util;
 
 import android.content.Context;
-import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensor;
-import org.wso2.carbon.iot.android.sense.events.input.Sensor.SensorData;
 
 import java.util.List;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
 /**
- * Created by menaka on 11/20/15.
+ * Adaptor for populate the ListView.
+ * Takes list of Sensor readings
  */
 public class SensorViewAdaptor extends BaseAdapter {
 
@@ -53,10 +64,10 @@ public class SensorViewAdaptor extends BaseAdapter {
 
         ViewHolder holder;
 
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view;
 
-        if(convertView == null){
+        if (convertView == null) {
             view = inflater.inflate(R.layout.display_sensor_values, parent, false);
             holder = new ViewHolder();
             holder.name = (TextView) view.findViewById(R.id.name);
@@ -64,9 +75,9 @@ public class SensorViewAdaptor extends BaseAdapter {
             holder.valuesY = (TextView) view.findViewById(R.id.Y);
             holder.valuesZ = (TextView) view.findViewById(R.id.Z);
             view.setTag(holder);
-        }else{
+        } else {
             view = convertView;
-            holder = (ViewHolder)view.getTag();
+            holder = (ViewHolder) view.getTag();
         }
 
         RealTimeSensor data = this.data.get(position);
@@ -81,8 +92,7 @@ public class SensorViewAdaptor extends BaseAdapter {
     }
 
 
-
-    private class ViewHolder{
+    private class ViewHolder {
         public TextView name;
         public TextView valuesX;
         public TextView valuesY;

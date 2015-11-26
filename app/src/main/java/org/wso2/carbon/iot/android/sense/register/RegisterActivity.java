@@ -13,7 +13,6 @@
  */
 package org.wso2.carbon.iot.android.sense.register;
 
-import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -30,12 +29,12 @@ import android.widget.EditText;
 
 import org.wso2.carbon.iot.android.sense.ActivitySelectSensor;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
-import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
-import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
 import org.wso2.carbon.iot.android.sense.util.LocalRegister;
 import org.wso2.carbon.iot.android.sense.util.SenseClient;
 import org.wso2.carbon.iot.android.sense.util.SenseUtils;
 import org.wso2.carbon.iot.android.sense.util.SupportedSensors;
+
+import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 
 
 /**
@@ -57,8 +56,11 @@ public class RegisterActivity extends Activity {
         getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0).edit().clear().apply();
 
         if (LocalRegister.isExist(getApplicationContext())) {
-            Intent activity = new Intent(getApplicationContext(), SenseDeEnroll.class);
-            startActivity(activity);
+//            Intent activity = new Intent(getApplicationContext(), SenseDeEnroll.class);
+//            startActivity(activity);
+            Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
+            startActivity(intent);
+
 
         }
         setContentView(R.layout.activity_register);
@@ -77,10 +79,6 @@ public class RegisterActivity extends Activity {
             @Override
             public void onClick(View view) {
                 attemptLogin();
-
-                Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
-                startActivity(intent);
-
             }
         });
 
@@ -133,24 +131,24 @@ public class RegisterActivity extends Activity {
             LocalRegister.addServerURL(getBaseContext(), hostname);
             boolean auth = client.isAuthenticate(username, password);
 
-            if(auth) {
+            if (auth) {
                 //TODO API SECURITY need to be added.
                 String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
-                boolean registerStatus=client.register(username, deviceId);
-                if(registerStatus){
+                boolean registerStatus = client.register(username, deviceId);
+                if (registerStatus) {
                     LocalRegister.addUsername(getApplicationContext(), username);
                     LocalRegister.addDeviceId(getApplicationContext(), deviceId);
 
-                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
-                    senseScheduleReceiver.clearAbortBroadcast();
-                    senseScheduleReceiver.onReceive(this, null);
+//                    SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
+//                    senseScheduleReceiver.clearAbortBroadcast();
+//                    senseScheduleReceiver.onReceive(this, null);
+//
+//                    DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
+//                    dataUploaderReceiver.clearAbortBroadcast();
+//                    dataUploaderReceiver.onReceive(this, null);
 
-                    DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
-                    dataUploaderReceiver.clearAbortBroadcast();
-                    dataUploaderReceiver.onReceive(this, null);
-
-                    Intent activity = new Intent(getApplicationContext(), SenseDeEnroll.class);
-                    startActivity(activity);
+                    Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
+                    startActivity(intent);
 
                 }
             }
