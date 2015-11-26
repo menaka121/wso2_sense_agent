@@ -19,6 +19,8 @@ import android.support.annotation.NonNull;
 
 public class RealTimeSensor implements Comparable {
 
+
+    //TODO : Add battery and location fields and methods
     private String name;
     private String valueX;
     private String valueY;

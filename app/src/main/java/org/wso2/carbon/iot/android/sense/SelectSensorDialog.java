@@ -46,7 +46,7 @@ public class SelectSensorDialog extends DialogFragment {
     protected boolean[] selections = new boolean[AvailableSensors.SUPPORTED_SENSOR_COUNT];
     Activity activity;
     SensorListListener sensorListListener;
-    private Set<String> senseorList = new HashSet<>();
+    private Set<String> selectedSensorSet = new HashSet<>();
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -67,11 +67,11 @@ public class SelectSensorDialog extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                 if (isChecked) {
-                    senseorList.add(sequence[which].toString());
+                    selectedSensorSet.add(sequence[which].toString());
 
                     pos[which] = true;
                 } else {
-                    senseorList.remove(sequence[which].toString());
+                    selectedSensorSet.remove(sequence[which].toString());
                     neg[which] = true;
                 }
             }
@@ -81,7 +81,7 @@ public class SelectSensorDialog extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.d("Click", "Ok");
-                //call sensor reading class
+                //call sensorDataMap reading class
                 sensorListListener.onDialogPositiveClick(SelectSensorDialog.this);
 
             }
@@ -141,7 +141,7 @@ public class SelectSensorDialog extends DialogFragment {
     }
 
     public Set<String> getSet() {
-        return this.senseorList;
+        return this.selectedSensorSet;
     }
 
     public interface SensorListListener {

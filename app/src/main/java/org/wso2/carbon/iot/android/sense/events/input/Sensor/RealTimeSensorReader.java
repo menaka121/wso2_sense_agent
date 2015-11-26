@@ -45,10 +45,10 @@ public class RealTimeSensorReader implements SensorEventListener {
         realTimeSensor.setValueY(event.values[1] + "");
         realTimeSensor.setValueZ(event.values[2] + "");
 
-        TempStore.sensor.put(AvailableSensors.getType(event.sensor.getType()), realTimeSensor);
+        TempStore.sensorDataMap.put(AvailableSensors.getType(event.sensor.getType()), realTimeSensor);
 
         Intent intent = new Intent();
-        intent.setAction("sensor");
+        intent.setAction("sensorDataMap");
         context.sendBroadcast(intent);
 
         adaptor.notifyDataSetChanged();

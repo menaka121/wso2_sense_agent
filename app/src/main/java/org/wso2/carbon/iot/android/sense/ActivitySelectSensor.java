@@ -58,13 +58,13 @@ import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 public class ActivitySelectSensor extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SelectSensorDialog.SensorListListener {
 
-    SharedPreferences sp;
-    SelectSensorDialog dialog = new SelectSensorDialog();
-    Set<String> senseorList = new HashSet<>();
-    FloatingActionButton fab;
-    FloatingActionButton add;
+    SharedPreferences sharedPreferences;
+    SelectSensorDialog sensorDialog = new SelectSensorDialog();
+    Set<String> selectedSensorSet = new HashSet<>();
+    FloatingActionButton fbtnPublishData;
+    FloatingActionButton fbtnAddSensors;
     ListView listView;
-    SensorManager manager;
+    SensorManager sensorManager;
     ArrayList<Sensor> sensors = new ArrayList<>();
     boolean check;
 
@@ -77,16 +77,16 @@ public class ActivitySelectSensor extends AppCompatActivity
         setContentView(R.layout.activity_activity_select_sensor);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         listView = (ListView) findViewById(R.id.senseListContainer);
 
-        registerReceiver(realTimeSensorChangeReceiver, new IntentFilter("sensor"));
+        registerReceiver(realTimeSensorChangeReceiver, new IntentFilter("sensorDataMap"));
 
         //Publish data
-        fab = (FloatingActionButton) findViewById(R.id.publish);
+        fbtnPublishData = (FloatingActionButton) findViewById(R.id.publish);
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        fbtnPublishData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Publishing data started", Snackbar.LENGTH_LONG)
@@ -98,15 +98,15 @@ public class ActivitySelectSensor extends AppCompatActivity
             }
         });
 
-        add = (FloatingActionButton) findViewById(R.id.addSensors);
-        add.setOnClickListener(new View.OnClickListener() {
+        fbtnAddSensors = (FloatingActionButton) findViewById(R.id.addSensors);
+        fbtnAddSensors.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.show(getFragmentManager(), "Sensor List");
+                sensorDialog.show(getFragmentManager(), "Sensor List");
             }
         });
 
-        sp = getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0);
+        sharedPreferences = getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -146,7 +146,7 @@ public class ActivitySelectSensor extends AppCompatActivity
         if (id == R.id.action_settings) {
 
             for (Sensor s : sensors) {
-                manager.unregisterListener(sensorReader, s);
+                sensorManager.unregisterListener(sensorReader, s);
             }
             /**
              * unregister the sensors
@@ -169,7 +169,7 @@ public class ActivitySelectSensor extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.select) {
-            dialog.show(getFragmentManager(), "Sensor List");
+            sensorDialog.show(getFragmentManager(), "Sensor List");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -181,7 +181,7 @@ public class ActivitySelectSensor extends AppCompatActivity
     public void onDialogPositiveClick(SelectSensorDialog dialog) {
 
         System.out.println(dialog.getSet().toString());
-        senseorList = dialog.getSet();
+        selectedSensorSet = dialog.getSet();
         update();
 
         TempStore.realTimeSensors.clear();
@@ -200,7 +200,7 @@ public class ActivitySelectSensor extends AppCompatActivity
         getSensors();
 
         for (Sensor s : sensors) {
-            manager.registerListener(sensorReader, s, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(sensorReader, s, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
 
@@ -212,10 +212,10 @@ public class ActivitySelectSensor extends AppCompatActivity
     public boolean update() {
         try {
             Log.d("Update", "Set the values to SP");
-            Log.d("List", senseorList.toString());
+            Log.d("List", selectedSensorSet.toString());
 
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, senseorList);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, selectedSensorSet);
             editor.apply();
 
         } catch (Exception e) {
@@ -243,8 +243,8 @@ public class ActivitySelectSensor extends AppCompatActivity
     }
 
     public void getSensors() {
-        for (String sensor : senseorList.toArray(new String[senseorList.size()])) {
-            sensors.add(manager.getDefaultSensor(AvailableSensors.getType(sensor.toLowerCase())));
+        for (String sensor : selectedSensorSet.toArray(new String[selectedSensorSet.size()])) {
+            sensors.add(sensorManager.getDefaultSensor(AvailableSensors.getType(sensor.toLowerCase())));
         }
     }
 }

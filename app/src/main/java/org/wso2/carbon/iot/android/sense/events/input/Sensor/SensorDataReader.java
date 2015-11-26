@@ -95,7 +95,7 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
 
     @Override
     public void run() {
-        Log.d(this.getClass().getName(), "running -sensor");
+        Log.d(this.getClass().getName(), "running -sensorDataMap");
         Vector<SensorData> sensorDatas=getSensorData();
         System.out.println(senseDataStruct);
         for( SensorData data : sensorDatas){

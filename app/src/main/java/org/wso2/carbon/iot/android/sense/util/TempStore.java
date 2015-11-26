@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class TempStore {
 
-    public static ConcurrentMap<String, RealTimeSensor> sensor = new ConcurrentHashMap<>();
+    public static ConcurrentMap<String, RealTimeSensor> sensorDataMap = new ConcurrentHashMap<>();
     public static ArrayList<RealTimeSensor> realTimeSensors = new ArrayList<>();
 
 }

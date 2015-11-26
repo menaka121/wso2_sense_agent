@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * class to store the supported sensor types.
+ * class to store the supported sensorDataMap types.
  */
 public class AvailableSensors {
 
@@ -40,7 +40,7 @@ public class AvailableSensors {
     }
 
 
-    //Get the int type of the sensor
+    //Get the int type of the sensorDataMap
     public static int getType(String sensor) {
         int type = 1;
         switch (sensor) {
@@ -72,7 +72,7 @@ public class AvailableSensors {
         return type;
     }
 
-    //Get the string type of te sensor
+    //Get the string type of te sensorDataMap
     public static String getType(int type) {
         String s = "";
         switch (type) {

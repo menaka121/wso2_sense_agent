@@ -37,7 +37,7 @@ public class RealTimeSensorChangeReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         TempStore.realTimeSensors.clear();
-        TempStore.realTimeSensors.addAll(TempStore.sensor.values());
+        TempStore.realTimeSensors.addAll(TempStore.sensorDataMap.values());
     }
 
 }

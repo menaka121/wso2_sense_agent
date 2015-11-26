@@ -22,7 +22,7 @@ public class SenseConstants {
     public final static String TRUSTSTORE_PASSWORD = "wso2carbon";
 
 
-    //For set user selected sensors. Will be used by sensor reading and dialog
+    //For set user selected sensors. Will be used by sensorDataMap reading and dialog
     public static String SELECTED_SENSORS = "Selected";
     public static String SELECTED_SENSORS_BY_USER = "userSelection";
 
