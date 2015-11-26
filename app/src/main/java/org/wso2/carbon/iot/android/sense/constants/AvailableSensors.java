@@ -69,7 +69,6 @@ public class AvailableSensors {
                 type = Sensor.TYPE_PROXIMITY;
 
         }
-        System.out.println("[Urgent] " + type);
         return type;
     }
 

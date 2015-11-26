@@ -39,8 +39,6 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
 
         SharedPreferences sharedPreferences = ctx.getSharedPreferences(SenseConstants.SELECTED_SENSORS, Context.MODE_MULTI_PROCESS);
         selectedset = sharedPreferences.getStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, null);
-        Log.d("Reader", selectedset.toString());
-        System.out.println("This");
         mSensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
 
         selectedSensorList(selectedset);
@@ -48,7 +46,6 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
         System.out.println(sensorList1.size());
 
         for(Sensor s : sensorList1){
-            Log.d("Sensor", s.getName());
             mSensorManager.registerListener(this, s, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
@@ -57,7 +54,6 @@ public class SensorDataReader extends DataReader implements SensorEventListener 
 
     private void collectSensorData(){
 
-        Log.d(this.getClass().getName(), "Sensor Type");
         for (Sensor sensor : sensorList1)
         {
             try{

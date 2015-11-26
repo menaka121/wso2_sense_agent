@@ -95,9 +95,6 @@ public class ActivitySelectSensor extends AppCompatActivity
                 DataUploaderReceiver dataUploaderReceiver = new DataUploaderReceiver();
                 dataUploaderReceiver.clearAbortBroadcast();
                 dataUploaderReceiver.onReceive(getApplicationContext(), null);
-                //Call the stop publish button
-
-
             }
         });
 
@@ -187,7 +184,6 @@ public class ActivitySelectSensor extends AppCompatActivity
         senseorList = dialog.getSet();
         update();
 
-
         TempStore.realTimeSensors.clear();
 
         SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
@@ -218,7 +214,6 @@ public class ActivitySelectSensor extends AppCompatActivity
             Log.d("Update", "Set the values to SP");
             Log.d("List", senseorList.toString());
 
-//            SharedPreferences sp = getSharedPreferences(SenseConstants.SELECTED_SENSORS, 0);
             SharedPreferences.Editor editor = sp.edit();
             editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, senseorList);
             editor.apply();

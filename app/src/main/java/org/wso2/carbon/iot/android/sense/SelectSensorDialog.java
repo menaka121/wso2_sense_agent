@@ -136,8 +136,6 @@ public class SelectSensorDialog extends DialogFragment {
     public CharSequence[] getSequence(Set<String> sensorset) {
         CharSequence[] seq;
         String[] seq2 = sensorset.toArray(new String[sensorset.size()]);
-
-
         seq = Arrays.copyOf(seq2, seq2.length);
         return seq;
     }
