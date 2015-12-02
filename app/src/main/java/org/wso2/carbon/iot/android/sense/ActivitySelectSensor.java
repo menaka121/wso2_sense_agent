@@ -37,10 +37,12 @@ import android.widget.ListView;
 import org.wso2.carbon.iot.android.sense.constants.AvailableSensors;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 import org.wso2.carbon.iot.android.sense.events.input.Sensor.RealTimeSensorReader;
+import org.wso2.carbon.iot.android.sense.register.RegisterActivity;
 import org.wso2.carbon.iot.android.sense.register.SenseDeEnroll;
 import org.wso2.carbon.iot.android.sense.scheduler.DataUploaderReceiver;
 import org.wso2.carbon.iot.android.sense.scheduler.RealTimeSensorChangeReceiver;
 import org.wso2.carbon.iot.android.sense.service.SenseScheduleReceiver;
+import org.wso2.carbon.iot.android.sense.util.LocalRegister;
 import org.wso2.carbon.iot.android.sense.util.SensorViewAdaptor;
 import org.wso2.carbon.iot.android.sense.util.TempStore;
 
@@ -145,16 +147,23 @@ public class ActivitySelectSensor extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
 
-            for (Sensor s : sensors) {
-                sensorManager.unregisterListener(sensorReader, s);
-            }
             /**
-             * unregister the sensors
+             * unregister the sensors and broadcast receivers.
              * */
-            unregisterReceiver(realTimeSensorChangeReceiver);
+            unregisterSensors();
+            unregisterReceivers();
 
-            Intent intent = new Intent(this, SenseDeEnroll.class);
-            startActivity(intent);
+            if (!LocalRegister.isExist(getApplicationContext())) {
+                Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
+                startActivity(activity);
+            }
+
+            LocalRegister.removeUsername(getApplicationContext());
+            LocalRegister.removeDeviceId(getApplicationContext());
+            LocalRegister.removeServerURL(getApplicationContext());
+            LocalRegister.setExist(false);
+            Intent activity = new Intent(getApplicationContext(), RegisterActivity.class);
+            startActivity(activity);
 
             return true;
         }
@@ -180,11 +189,10 @@ public class ActivitySelectSensor extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(SelectSensorDialog dialog) {
 
-        System.out.println(dialog.getSet().toString());
+        Log.d("Selected sensors", dialog.getSet().toString());
         selectedSensorSet = dialog.getSet();
         update();
-
-        TempStore.realTimeSensors.clear();
+        unregisterSensors();
 
         SenseScheduleReceiver senseScheduleReceiver = new SenseScheduleReceiver();
         senseScheduleReceiver.clearAbortBroadcast();
@@ -195,6 +203,7 @@ public class ActivitySelectSensor extends AppCompatActivity
          * Register them
          * */
         SensorViewAdaptor adaptor1 = new SensorViewAdaptor(getApplicationContext(), TempStore.realTimeSensors);
+        adaptor1.notifyDataSetChanged();
 
         sensorReader = new RealTimeSensorReader(this, adaptor1);
         getSensors();
@@ -211,8 +220,10 @@ public class ActivitySelectSensor extends AppCompatActivity
 
     public boolean update() {
         try {
-            Log.d("Update", "Set the values to SP");
-            Log.d("List", selectedSensorSet.toString());
+            Log.d("Update", "Set the values to Shared Preferences");
+
+            TempStore.realTimeSensors.clear();
+            TempStore.sensorDataMap.clear();
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putStringSet(SenseConstants.SELECTED_SENSORS_BY_USER, selectedSensorSet);
@@ -225,26 +236,29 @@ public class ActivitySelectSensor extends AppCompatActivity
         return true;
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-    }
-
     public void getSensors() {
+        sensors.clear();
         for (String sensor : selectedSensorSet.toArray(new String[selectedSensorSet.size()])) {
             sensors.add(sensorManager.getDefaultSensor(AvailableSensors.getType(sensor.toLowerCase())));
         }
+    }
+
+    /**
+     * This method will unregister all the registered sensors.
+     * */
+    public void unregisterSensors(){
+        if (sensors.size()>0){
+            for (Sensor s : sensors) {
+                System.out.println(s.getName() +" Unregistered!");
+                sensorManager.unregisterListener(sensorReader, s);
+            }
+        }
+    }
+
+    /**
+     * This method unregisters the real-time broadcast receiver.
+     * */
+    public void unregisterReceivers(){
+        unregisterReceiver(realTimeSensorChangeReceiver);
     }
 }

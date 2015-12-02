@@ -33,7 +33,9 @@ public class SenseDeEnroll extends Activity {
             startActivity(activity);
         }
 
-        setContentView(R.layout.activity_sense_settings);
+        //No need to set to this content because of the direct de enrollment process.
+//        setContentView(R.layout.activity_sense_settings);
+
         LocalRegister.removeUsername(getApplicationContext());
         LocalRegister.removeDeviceId(getApplicationContext());
         LocalRegister.removeServerURL(getApplicationContext());

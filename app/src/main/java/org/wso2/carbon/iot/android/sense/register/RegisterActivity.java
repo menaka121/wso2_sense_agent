@@ -79,6 +79,8 @@ public class RegisterActivity extends Activity {
             @Override
             public void onClick(View view) {
                 attemptLogin();
+//                Intent intent = new Intent(getApplicationContext(), ActivitySelectSensor.class);
+//                startActivity(intent);
             }
         });
 
