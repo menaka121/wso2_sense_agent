@@ -73,7 +73,7 @@ public class DataUploaderService extends Service {
                     }
                     for (SensorData sensorData : sensorDataMap) {
                         JSONObject sensorJsonObject = new JSONObject();
-                        sensorJsonObject.put("time", "" + sensorData.getCollectTimestamp());
+                        sensorJsonObject.put("time", "" + sensorData.getTimestamp());
                         sensorJsonObject.put("key", "" + sensorData.getSensorType());
                         sensorJsonObject.put("value", sensorData.getSensorValues());
                         sensorJsonArray.put(sensorJsonObject);
