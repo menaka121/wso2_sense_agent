@@ -19,10 +19,7 @@ import android.util.Log;
 import android.widget.Toast;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,11 +39,10 @@ public class SenseClient {
     }
 
     public boolean isAuthenticate(String username, String password) {
-        Map<String, String> _response = new HashMap<String, String>();
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("username", username);
         params.put("password", password);
-        String response = "";
+        String response;
         try {
 
             String endpoint = LocalRegister.getServerURL(context) + SenseConstants.LOGIN_CONTEXT;
@@ -56,7 +52,7 @@ public class SenseClient {
 
                 return true;
             } else {
-                //Toast.makeText(context, "Authentication failed, please check your credentials and try again.", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Authentication failed, please check your credentials and try again.", Toast.LENGTH_LONG).show();
 
                 return false;
             }
@@ -67,8 +63,7 @@ public class SenseClient {
     }
 
     public boolean register(String username, String deviceId) {
-        Map<String, String> _response = new HashMap<String, String>();
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("deviceId", deviceId);
         params.put("owner", username);
 
@@ -101,7 +96,7 @@ public class SenseClient {
 
     public Map<String, String> sendWithTimeWait(String endpoint, Map<String, String> params, String option, String
             jsonBody) {
-        Map<String, String> response = null;
+        Map<String, String> response;
         Map<String, String> responseFinal = null;
         for (int i = 1; i <= SenseConstants.Request.MAX_ATTEMPTS; i++) {
             Log.d(TAG, "Attempt #" + i + " to register");
@@ -109,7 +104,7 @@ public class SenseClient {
 
                 response = sendToServer(endpoint, params, option, jsonBody);
 
-                if (response != null && !response.equals(null)) {
+                if (response != null) {
                     responseFinal = response;
                 }
 
@@ -120,7 +115,7 @@ public class SenseClient {
                     break;
                 }
 
-                return responseFinal;
+                return null;
             }
         }
 
@@ -132,8 +127,7 @@ public class SenseClient {
         try {
             urlString = LocalRegister.getServerURL(context) + SenseConstants.DATA_ENDPOINT;
             Log.i("SENDING DATAs", "SENDING JSON to " + urlString + " : " + data);
-            Map<String, String> response = sendWithTimeWait(urlString, null, "POST", data);
-            String responseStatus = response.get("status");
+            sendWithTimeWait(urlString, null, "POST", data);
 
         } catch (Exception ex) {
             Log.e("Send Sensor Data", "Failure to send data to "+ urlString);
@@ -171,29 +165,5 @@ public class SenseClient {
         }
         return null;
     }
-
-    private String inputStreamAsString(InputStream in) {
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        StringBuilder builder = new StringBuilder();
-        String line = null;
-        try {
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-                builder.append("\n"); // append a new line
-            }
-        } catch (IOException e) {
-            Log.e(SenseClient.class.getName(), e.getMessage());
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-               Log.e(SenseClient.class.getName(), e.getMessage());
-            }
-        }
-        // System.out.println(builder.toString());
-        return builder.toString();
-    }
-
 
 }

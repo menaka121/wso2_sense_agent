@@ -73,7 +73,7 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
             return urlConnection;
         } catch (KeyManagementException | NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
 
-            Log.e(SenseClientAsyncExecutor.class.getName(), "Invalid Certifcate");
+            Log.e(SenseClientAsyncExecutor.class.getName(), "Invalid Certificate");
             return null;
         }
 
@@ -207,7 +207,6 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
     }
 
     public HostnameVerifier SERVER_HOST = new HostnameVerifier() {
-        //String allowHost = LocalRegister.getServerHost(context);
         @Override
         public boolean verify(String hostname, SSLSession session) {
             HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
