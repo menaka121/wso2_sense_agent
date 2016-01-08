@@ -67,6 +67,7 @@ public class RegisterActivity extends Activity {
         mUsernameView = (EditText) findViewById(R.id.username);
         mPasswordView = (EditText) findViewById(R.id.password);
         mHostView = (EditText) findViewById(R.id.hostname);
+        System.out.println(Build.BRAND+" "+Build.MODEL);
 //
 
         SupportedSensors supportedSensors = new SupportedSensors(getApplicationContext());
@@ -131,12 +132,12 @@ public class RegisterActivity extends Activity {
 
             SenseClient client = new SenseClient(getApplicationContext());
             LocalRegister.addServerURL(getBaseContext(), hostname);
-            boolean auth = client.isAuthenticate(username, password);
+//            boolean auth = client.isAuthenticate(username, password);
 
-            if (auth) {
+//            if (auth) {
                 //TODO API SECURITY need to be added.
                 String deviceId = SenseUtils.generateDeviceId(getBaseContext(), getContentResolver());
-                boolean registerStatus = client.register(username, deviceId);
+                boolean registerStatus = client.register(username, password, deviceId);
                 if (registerStatus) {
                     LocalRegister.addUsername(getApplicationContext(), username);
                     LocalRegister.addDeviceId(getApplicationContext(), deviceId);
@@ -153,7 +154,7 @@ public class RegisterActivity extends Activity {
                     startActivity(intent);
 
                 }
-            }
+//            }
             showProgress(false);
         }
 

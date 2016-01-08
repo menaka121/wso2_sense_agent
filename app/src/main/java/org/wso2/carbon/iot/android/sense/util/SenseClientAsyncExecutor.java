@@ -16,6 +16,7 @@ package org.wso2.carbon.iot.android.sense.util;
 
 import agent.sense.android.iot.carbon.wso2.org.wso2_senseagent.R;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
@@ -26,10 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,39 +37,38 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
     private static List<String> cookies;
     private Context context;
     private final static String TAG = "SenseService Client";
-
+    String access_token;
+    String refresh_token;
     public SenseClientAsyncExecutor(Context context) {
         this.context = context;
 
     }
 
+    TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            }
+    };
+
+
     private HttpsURLConnection getTrustedConnection(HttpsURLConnection conn) {
-        HttpsURLConnection urlConnection = conn;
         try {
-            KeyStore localTrustStore;
 
-            localTrustStore = KeyStore.getInstance("BKS");
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            conn.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
-            InputStream in = context.getResources().openRawResource(
-                    R.raw.client_truststore);
-
-            localTrustStore.load(in, SenseConstants.TRUSTSTORE_PASSWORD.toCharArray());
-
-            TrustManagerFactory tmf;
-            tmf = TrustManagerFactory.getInstance(TrustManagerFactory
-                    .getDefaultAlgorithm());
-
-            tmf.init(localTrustStore);
-
-            SSLContext sslCtx;
-
-            sslCtx = SSLContext.getInstance("TLS");
-
-            sslCtx.init(null, tmf.getTrustManagers(), null);
-
-            urlConnection.setSSLSocketFactory(sslCtx.getSocketFactory());
-            return urlConnection;
-        } catch (KeyManagementException | NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+//            urlConnection.setSSLSocketFactory(sslCtx.getSocketFactory());
+            return conn;
+        } catch (KeyManagementException | NoSuchAlgorithmException e) {
 
             Log.e(SenseClientAsyncExecutor.class.getName(), "Invalid Certificate");
             return null;
@@ -113,8 +110,10 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
             if (url.getProtocol().toLowerCase().equals("https")) {
 
                 sConn = (HttpsURLConnection) url.openConnection();
+
                 sConn = getTrustedConnection(sConn);
                 sConn.setHostnameVerifier(SERVER_HOST);
+
                 conn = sConn;
 
             } else {
@@ -139,6 +138,9 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
             conn.setRequestMethod(option);
             if(jsonBody!=null && !jsonBody.isEmpty()){
                 conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Test1", "pass");
+                conn.setRequestProperty("Authorization", "Bearer "+LocalRegister.getAccessToken());
+                conn.setRequestProperty("Test2", "pass");
             }else {
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             }
@@ -153,9 +155,17 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                 out.write(bytes);
                 out.close();
                 // handle the response
+                conn.connect();
                 status = conn.getResponseCode();
+                System.out.println(conn.getHeaderFields().toString());
+                access_token = conn.getHeaderField("access");
+                refresh_token = conn.getHeaderField("refresh");
+
+                LocalRegister.setAccessToken(access_token);
+                LocalRegister.setRefreshToken(refresh_token);
+
                 response_params.put("status", String.valueOf(status));
-                Log.v("Response Status", status + "");
+                Log.v("Response Status", status + "" + " access : " + LocalRegister.getAccessToken() + " refresh : " + LocalRegister.getRefreshToken());
 
                 List<String> receivedCookie = conn.getHeaderFields().get("Set-Cookie");
                 if(receivedCookie!=null){
@@ -167,7 +177,7 @@ public class SenseClientAsyncExecutor extends AsyncTask<String, Void, Map<String
                     InputStream inStream = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
                     StringBuilder builder = new StringBuilder();
-                    String line = null;
+                    String line;
                     try {
                         while ((line = reader.readLine()) != null) {
                             builder.append(line);

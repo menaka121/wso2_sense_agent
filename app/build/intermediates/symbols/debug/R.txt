@@ -908,6 +908,7 @@ int mipmap ic_launcher 0x7f030000
 int mipmap wso2logo 0x7f030001
 int raw client_truststore 0x7f060000
 int raw gtm_analytics 0x7f060001
+int raw wso2carbon 0x7f060002
 int string abc_action_bar_home_description 0x7f070000
 int string abc_action_bar_home_description_format 0x7f070032
 int string abc_action_bar_home_subtitle_description_format 0x7f070033

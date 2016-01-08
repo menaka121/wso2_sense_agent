@@ -15,6 +15,7 @@ package org.wso2.carbon.iot.android.sense.util;
 
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 import org.wso2.carbon.iot.android.sense.constants.SenseConstants;
@@ -30,6 +31,7 @@ public class SenseClient {
 
 
     private final static String TAG = "SenseService Client";
+    private final static String DEVICE_NAME = Build.MANUFACTURER +" "+ Build.MODEL;
 
     private Context context;
 
@@ -62,13 +64,17 @@ public class SenseClient {
         }
     }
 
-    public boolean register(String username, String deviceId) {
+    public boolean register(String username, String password, String deviceId) {
         Map<String, String> params = new HashMap<>();
+        params.put("username", username);
+        params.put("password", password);
         params.put("deviceId", deviceId);
         params.put("owner", username);
+        params.put("deviceName", DEVICE_NAME);
 
         try {
             String endpoint = LocalRegister.getServerURL(context) + SenseConstants.REGISTER_CONTEXT;
+            Log.d("End Point", endpoint);
             Map<String, String> response = sendWithTimeWait(endpoint, params, "PUT", null);
 
             String responseStatus = response.get("status");
