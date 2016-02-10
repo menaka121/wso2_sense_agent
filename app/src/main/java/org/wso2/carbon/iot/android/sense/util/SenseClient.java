@@ -74,7 +74,7 @@ public class SenseClient {
 
         try {
             String endpoint = LocalRegister.getServerURL(context) + SenseConstants.REGISTER_CONTEXT;
-            Log.d("End Point", endpoint);
+//            Log.d("End Point", endpoint);
             Map<String, String> response = sendWithTimeWait(endpoint, params, "PUT", null);
 
             String responseStatus = response.get("status");
